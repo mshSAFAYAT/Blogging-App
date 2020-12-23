@@ -11,6 +11,20 @@ import NotificationScreen from "./src/screens/Notification"
 import {AuthContext,AuthProvider} from "./src/providers/AuthProvider"
 import { Entypo, AntDesign, Ionicons } from "@expo/vector-icons";
 import CommentScreen from "./src/screens/CommentScreen"
+import * as firebase from "firebase";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBso4XCLrMf3YqmMAnXIARavPy3m7RK_dc",
+  authDomain: "blog-8b509.firebaseapp.com",
+  projectId: "blog-8b509",
+  storageBucket: "blog-8b509.appspot.com",
+  messagingSenderId: "113626351773",
+  appId: "1:113626351773:web:0b7a3e532302da58742c74",
+  measurementId: "G-TJB0JCE533"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
 
 const AuthStack = createStackNavigator()
 const Tab = createMaterialBottomTabNavigator();

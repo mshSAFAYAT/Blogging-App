@@ -3,10 +3,14 @@ import { View } from "react-native";
 import { Card, Button, Text, Avatar } from "react-native-elements";
 import { AntDesign } from "@expo/vector-icons";
 import { mergeData } from "../functions/AsyncStorageFunction";
+import * as firebase from "firebase";
+import 'firebase/firestore';
 
 const PostDetails = ({content,props}) => {
     //console.log(props)
-    const [like,setLike] = useState(content.like)
+    //const [like,setLike] = useState(content.like)
+    const Like =content.data.likeCount;
+    const Date =content.data.creatTime.toDate().toDateString();
     return (
       <Card>
         <View
@@ -22,12 +26,12 @@ const PostDetails = ({content,props}) => {
             activeOpacity={1}
           />
           <Text h4Style={{ padding: 10 }} h4>
-            {content.postOwner}
+            {content.data.user_name}
           </Text>
         </View>
         <Text style={{ fontStyle: "italic" }}>{content.date}</Text>
         <Text style={{paddingVertical: 10, fontSize : 30}}>
-          {content.post}
+          {content.data.post}
         </Text>
         <Card.Divider />
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -36,8 +40,17 @@ const PostDetails = ({content,props}) => {
             title="Like "
             icon={<AntDesign name="like2" size={24} color="black" />}
             onPress = {async () => {
-              await mergeData(content.id,JSON.stringify({like : like+1}));
-              setLike(like+1);
+              await firebase
+              .firestore()
+              .collection("posts")
+              .doc(content.id)
+              .update(
+              {
+                likeCount:Like+1
+              })
+              .catch((error)=>{
+                console.log(error)
+              });
             }}
           />
          
@@ -49,7 +62,7 @@ const PostDetails = ({content,props}) => {
            />
             
         </View>
-        <Text style = {{ fontWeight: "bold",color : '#3b5998', fontSize : 15}}>Like : {like}</Text>
+        <Text style = {{ fontWeight: "bold",color : '#3b5998', fontSize : 15}}>Like : {Like}</Text>
       </Card>
     );
   };

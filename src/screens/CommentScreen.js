@@ -6,39 +6,54 @@ import HeadHome from "../comps/HeadHome";
 import AddComment from "../comps/AddComment";
 import CommentDetails from "../comps/CommentDetails";
 import { getDataJSON } from "../functions/AsyncStorageFunction";
+import * as firebase from "firebase";
+import 'firebase/firestore';
 
 const CommentScreen = ({navigation,route}) => {
-    let postId = route.params;
-
-    const [allCOmments,setAllComments] = useState([]);
-    const [postDetails,setPostDetails] = useState({});
-    const [loading,setLoading] = useState(false);
-
+    let postid = route.params;
+    //console.log(postid)
+    const [Comments,setComment]=useState([]);
+    const [Post, setPosts] = useState({});
+    //const [loading,setLoading] = useState(false)
     const getPostDetails = async () => {
-      setLoading(true);
-        let postDetails = await getDataJSON(postId);
-        if (postDetails != null) {
-            setPostDetails(postDetails);
-        } else {
-          console.log("no post");
-        }
+     // setLoading(true);
+      firebase
+      .firestore()
+      .collection("posts")
+      .doc(postid)
+      .get()
+      .then((doc)=>{
+          let post=doc.data()
+          post.id=postid
+          post.creatTime=post.creatTime.toDate().toDateString()
+          setPosts(post)
+      })
+      .catch((error)=>console.log(error));
       };
 
       const getComments = async () => {
-        let keys = await AsyncStorage.getAllKeys();
-        let comments = [];
-        if (keys != null) {
-          for (let key of keys) {
-            if (key.startsWith("commentId")) {
-              let comment = await getDataJSON(key);
-              comments.push(comment);
-            }
+        firebase
+      .firestore()
+      .collection("notifications")
+      //.orderBy("creatTime","desc")
+      .onSnapshot((querySnapshot)=>{
+          let allComment=[]
+          querySnapshot.forEach((docRef)=>{
+              allComment.push({
+                  id:docRef.id,
+                  data:docRef.data(),
+              });
+          });
+          console.log(allComment)
+          if(allComment!=null){
+              let Comment=allComment.filter(c=>c.data.postId==postid && c.data.comments!=undefined)
+              setComment(Comment)
           }
-          setAllComments(comments);
-        } else {
-
-        }
-        setLoading(false);
+          else console.log("no comment")
+          },(error)=>{
+          console.log(error);
+      });
+       // setLoading(false);
       };
     
       useEffect(() => {
@@ -46,7 +61,7 @@ const CommentScreen = ({navigation,route}) => {
       }, []);
       useEffect(() => {
         getComments();
-      });
+      },[]);
 
       return (
         <AuthContext.Consumer>
@@ -55,21 +70,21 @@ const CommentScreen = ({navigation,route}) => {
               <HeadHome navigation={navigation} />
 
               <Card>
-                <Text>{postDetails.postOwner}</Text>
-                <Text>{postDetails.date}</Text>
-                <Text>{postDetails.post}</Text>
+              <Text style={{fontSize:16}}>{Post.user_name}</Text>
+                <Text style={{color:"blue"}}>{Post.creatTime}</Text>
+                <Text style={{fontSize:20}}>{Post.post}</Text>
               </Card>
-              <AddComment postDetails={postDetails} user={auth.CurrentUser.name}/>
-              <ActivityIndicator size = "large" color = "blue" animating = {loading}/>
+              <AddComment post={Post} user={auth.CurrentUser.displayName}/>
               <FlatList 
-              data={allCOmments}
+              data={Comments}
               renderItem={function({item}){
-                  if(postDetails.id==item.postId){
+                if(postid==item.data.postId)
+                {
                 return(
                   <CommentDetails 
-                  content={item}/>
+                  content={item.data}/>
                 )
-                  }
+                }
               }}
               keyExtractor={(item, index) => index.toString()}
               />

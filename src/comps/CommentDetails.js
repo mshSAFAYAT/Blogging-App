@@ -5,8 +5,8 @@ import { Card, Button, Text, Avatar } from "react-native-elements";
 const CommentDetails = ({ content }) => {
   return (
     <Card>
-      <Text>{content.author}</Text>
-      <Text>{content.comment}</Text>
+      <Text>{content.sender}</Text>
+      <Text>{content.comments}</Text>
     </Card>
   );
 };

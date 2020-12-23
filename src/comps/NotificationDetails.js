@@ -5,19 +5,18 @@ import { Text } from "react-native";
 
 const NotificationDetails=({content,props})=>{
 
-
+    console.log(content)
     return(
         <Card onPress = { function(){
-            let postId = content.postId 
-            props.navigation.navigate("Comment",postId)
+            let postID = content.data.postId
+            props.navigation.navigate("Comment",postID)
             }}>
             
-            <Card.Title title={content.author} 
+            <Card.Title title={content.data.sender} 
             subtitle=' commented on your post' 
             left={()=><MaterialIcons 
             name="insert-comment" 
             size={24} color="black" 
-           
                 />}
                 />
                  

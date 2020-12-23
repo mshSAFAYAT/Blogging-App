@@ -3,7 +3,7 @@ import React from 'react';
 import {Header} from "react-native-elements";
 import {AuthContext} from "../providers/AuthProvider";
 import { FontAwesome5 } from '@expo/vector-icons';
-
+import * as firebase from "firebase"
 const HeadHome=(props)=>{
     return(
         <AuthContext.Consumer>
@@ -25,9 +25,17 @@ const HeadHome=(props)=>{
                   icon: "lock-outline",
                   color: "#fff",
                   onPress: function () {
-                    auth.setIsLoggedIn(false);
-                    auth.setCurrentUser({});
-                  },
+                    firebase
+                    .auth()
+                    .signOut()
+                    .then(() => {
+                      auth.setIsLoggedIn(false);
+                      auth.setCurrentUser({});
+                    })
+                   .catch((error) => {
+                      alert(error);
+                    });
+                },
                 }}
               />
             )}

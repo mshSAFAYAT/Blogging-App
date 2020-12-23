@@ -4,3 +4,4 @@ npm install react-native-elements
 npm install @react-navigation/material-bottom-tabs react-native-paper
 npm install @react-navigation/drawer
 expo install expo-image-picker
+Installing Picker Package: npm install @react-native-community/picker --save

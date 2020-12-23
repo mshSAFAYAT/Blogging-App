@@ -7,6 +7,8 @@ import { SimpleLineIcons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import {AuthContext} from "../providers/AuthProvider"
 import {getDataJSON} from '../functions/AsyncStorageFunction'
+import * as firebase from "firebase";
+import 'firebase/firestore';
 
 const SignInScreen = (props) => {
     const [mail,setMail] = useState("");
@@ -48,24 +50,23 @@ const SignInScreen = (props) => {
                 icon = {<MaterialCommunityIcons name="account-arrow-right" size={24} color="white" />}
                 title = 'Sign In'
                 type = "solid"
-                onPress={
-                        async function(){
-                        let UserData = await getDataJSON(mail)
-                        if(UserData == null)
-                        {
-                            alert("No Account");
-                        }
-                        else{
-                        if(UserData.password == password)
-                        {
+                onPress={async ()=>{
+                    if(mail.length!=0 && password.length!=0)
+                    {
+                            firebase
+                            .auth()
+                            .signInWithEmailAndPassword(mail, password)
+                            .then((userCreds) => {
                             auth.setIsLoggedIn(true);
-                            auth.setCurrentUser(UserData);
-                        }
-                        else {
-                            alert("Sign In Failed");
-                        }
+                            auth.setCurrentUser(userCreds.user);
+                            })
+                            .catch((error) => {
+                            alert(error);
+                            });
                     }
-                    }
+                    else
+                        alert("Please Enter Email & Password"); 
+                }
                 }
 
                 />
@@ -83,14 +84,6 @@ const SignInScreen = (props) => {
                 }
                 />
         </Card>
-        {/*<Button
-            type="clear"
-            icon ={<MaterialIcons name="clear" size={22} color="black" />}
-            title=" Clean App"
-            onPress={function () {
-                AsyncStorage.clear()
-            }}
-        />*/}
         </View>
         )}
         </AuthContext.Consumer>);

@@ -7,6 +7,9 @@ import { MaterialIcons ,AntDesign,FontAwesome} from '@expo/vector-icons';
 import {storeDataJSON} from '../functions/AsyncStorageFunction'
 import { Entypo } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as firebase from "firebase";
+import 'firebase/firestore';
+
 const SignUpScreen = (props) => {
     const [name,setName] = useState("");
     const [sid,setSID] = useState("");
@@ -15,6 +18,7 @@ const SignUpScreen = (props) => {
     const [DoB, setDoB] = useState("");
     const [address,setAddress] = useState("");
     const [worksAt,setWork] = useState("");
+
     const [image, setImage] = useState(null);
     useEffect(() => {
         (async () => {
@@ -41,6 +45,7 @@ const SignUpScreen = (props) => {
           setImage(result.uri);
         }
       };
+      
     return(
         <View style={styles.viewStyle}>
             
@@ -131,20 +136,31 @@ const SignUpScreen = (props) => {
             type = "solid"
             onPress = {
                 function(){
-                    let currentUser = {
-                        name : name,
-                        sid : sid,
-                        mail : mail,
-                        DoB : DoB,
-                        address : address,
-                        worksAt : worksAt,
-                        password : password,
-                        image : image
-                    };
-                    storeDataJSON(mail, currentUser);
-                    props.navigation.navigate('Sign In');
-                    console.log(currentUser);
-                }
+                    firebase
+                    .auth()
+                    .createUserWithEmailAndPassword(mail,password)
+                    .then(
+                    (userCreds)=>{
+                        userCreds.user.updateProfile({displayName:name});
+                        firebase
+                          .firestore().collection('users').doc(userCreds.user.uid).set({
+                            name : name,
+                            sid : sid,
+                            mail : mail,
+                            DoB : DoB,
+                            address : address,
+                            worksAt : worksAt,
+                            image : image
+                        })
+                        .then(()=>{
+                            alert(userCreds.user.uid+" Account Created")
+                            props.navigation.navigate("Sign In");
+                        })
+                    })
+                    .catch((error)=>{
+                        alert(error)
+                    })      
+                    }
             }
 
             />

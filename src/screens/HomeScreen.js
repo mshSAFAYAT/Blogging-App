@@ -17,7 +17,8 @@ import { AuthContext } from "../providers/AuthProvider";
 import { storeDataJSON,getDataJSON } from "../functions/AsyncStorageFunction";
 import HeadHome  from "../comps/HeadHome";
 import  AddPost  from "../comps/AddPost";
-import  PostDetails from "../comps/PostDetails"
+import  PostDetails from "../comps/PostDetails";
+import * as firebase from "firebase";
 
 const HomeScreen = (props) => {
   
@@ -26,21 +27,25 @@ const HomeScreen = (props) => {
 
   const getPosts = async () => {
     setLoading(true);
-    let keys = await AsyncStorage.getAllKeys();
-    let posts = [];
-    if (keys != null) {
-      for (let key of keys) {
-        if(key.startsWith("postId")){
-          let post = await getDataJSON(key);
-          posts.push(post);
-        } 
-      }
-      setPost(posts);
-    }
-    else{
-      console.log('No keys')
-    }
-    setLoading(false);
+    firebase
+            .firestore()
+            .collection("posts")
+            .orderBy("creatTime","desc")
+            .onSnapshot((querySnapshot)=>{
+                let Posts=[]
+                querySnapshot.forEach((doc)=>{
+                    Posts.push({
+                        id: doc.id,
+                        data: doc.data(),
+                    });
+                });
+                setPost(Posts)
+                setLoading(false);      
+            },(error)=>{
+                setLoading(false);
+
+            });
+    //setLoading(false);
   };
   
   useEffect(() => {
@@ -52,7 +57,7 @@ const HomeScreen = (props) => {
       {(auth) => (
         <View style={styles.viewStyle}>
           <HeadHome navigation = {props.navigation}/>
-          <AddPost  user = {auth.CurrentUser} />
+          <AddPost  user = {auth.CurrentUser} props = {props}/>
         <ActivityIndicator size = "large" color = "blue" animating = {loading}/>
         <FlatList
             data={post}
